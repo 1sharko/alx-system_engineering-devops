@@ -6,3 +6,4 @@ biggi
 best
 down
 berry
+king
