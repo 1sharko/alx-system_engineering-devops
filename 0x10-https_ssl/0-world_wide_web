@@ -1,18 +1,24 @@
 #!/usr/bin/env bash
-# write a Bash script that will display information about the subdomains
-
-dns_config () {
-    script=$(dig "$2"."$1" | grep -A1 'ANSWER SECTION:' | tr '\t' '\n' | tail -2 | tr '\n' ' ')
-    echo "$2 $script" | awk '{print "The subdomain " $1 " is a " $2 " record and points to " $3}'
+# This script configures an subdomain
+func()
+{
+    SUB_DOMAIN="$2"
+    DOMAIN_COMPLETE="$2.$1"
+    INFO="$(dig "$DOMAIN_COMPLETE" | grep 'ANSWER SECTION' -A1 | awk 'NR==2')"
+    IP=$(echo "$INFO" | awk '{print $5}')
+    RECORD=$(echo "$INFO" | awk '{print $4}')
+    echo The subdomain "$SUB_DOMAIN" is a "$RECORD" record and points to "$IP"
 }
 
-if [ "$#" == 1 ]
-then
-  dns_config "$1" "www"
-  dns_config "$1" "lb-01"
-  dns_config "$1" "web-01"
-  dns_config "$1" "web-02"
-elif [ "$#" == 2 ]
-then
-  dns_config "$1" "$2"
+
+if [[ -z "$2" ]]
+then   
+    SUB_DOMAIN_LIST="www lb-01 web-01 web-02"
+    for it in $SUB_DOMAIN_LIST; do
+	func "$1" "$it"
+    done
+else
+    func "$1" "$2"
 fi
+
+exit 0
